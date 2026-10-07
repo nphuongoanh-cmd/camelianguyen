@@ -35,7 +35,8 @@ function setup() {
 function doGet(e) {
   const poll = findPoll_((e.parameter.poll || '').trim());
   if (!poll) return json_({ ok: false, error: 'unknown_poll' });
-  return json_({ ok: true, poll: publicPoll_(poll), results: poll.showResults ? tally_(poll) : null });
+  const values = poll.showResults ? SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET).getDataRange().getValues() : null;
+  return json_({ ok: true, poll: publicPoll_(poll), results: values ? tally_(poll, values) : null });
 }
 
 // POST {poll, choice, email}: records the vote. One vote per email per poll:
@@ -55,28 +56,48 @@ function doPost(e) {
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
+  let results = null;
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET);
     const row = [new Date(), poll.id, option.n, option.label, validEmail];
+    // Read the votes once: to find this subscriber's earlier vote, and to count.
+    const values = validEmail || poll.showResults ? sheet.getDataRange().getValues() : [];
     let existing = -1;
     if (validEmail) {
-      const values = sheet.getDataRange().getValues();
       for (let i = values.length - 1; i >= 1; i--) {
-        if (values[i][1] === poll.id && values[i][4] === validEmail) { existing = i + 1; break; }
+        if (values[i][1] === poll.id && values[i][4] === validEmail) { existing = i; break; }
       }
     }
-    if (existing > 0) sheet.getRange(existing, 1, 1, row.length).setValues([row]);
-    else sheet.appendRow(row);
-    SpreadsheetApp.flush();
+    if (existing > 0) {
+      sheet.getRange(existing + 1, 1, 1, row.length).setValues([row]);
+      values[existing] = row;
+    } else {
+      sheet.appendRow(row);
+      values.push(row);
+    }
+    if (poll.showResults) results = tally_(poll, values);
+    SpreadsheetApp.flush(); // so the next vote, once it gets the lock, sees this one
   } finally {
     lock.releaseLock();
   }
 
-  return json_({ ok: true, poll: publicPoll_(poll), choice: option.n, results: poll.showResults ? tally_(poll) : null });
+  return json_({ ok: true, poll: publicPoll_(poll), choice: option.n, results: results });
 }
 
+// Poll questions are kept in memory for a minute, so most votes skip reading
+// the Polls tab. An edit to the Polls tab can take up to a minute to show.
 function findPoll_(id) {
   if (!id) return null;
+  const cache = CacheService.getScriptCache();
+  const key = 'poll:' + id;
+  const cached = cache.get(key);
+  if (cached) return JSON.parse(cached);
+  const poll = readPoll_(id);
+  if (poll) cache.put(key, JSON.stringify(poll), 60);
+  return poll;
+}
+
+function readPoll_(id) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(POLLS_SHEET);
   const rows = sheet.getDataRange().getDisplayValues();
   for (let r = 1; r < rows.length; r++) {
@@ -102,8 +123,7 @@ function publicPoll_(poll) {
   return { id: poll.id, question: poll.question, options: poll.options, thanks: poll.thanks, showResults: poll.showResults };
 }
 
-function tally_(poll) {
-  const values = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET).getDataRange().getValues();
+function tally_(poll, values) {
   const counts = {};
   poll.options.forEach(o => { counts[o.n] = 0; });
   let total = 0;

@@ -29,7 +29,7 @@
 
   async function call(body) {
     const res = body
-      ? await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+      ? await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), keepalive: true })
       : await fetch(`${endpoint}?poll=${encodeURIComponent(pollId)}`);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
@@ -95,9 +95,14 @@
 
   async function start() {
     if (!pollId) return message('Sondage introuvable', `Ce lien semble incomplet. Reviens à ton email et touche à nouveau ta réponse.`);
-    root.innerHTML = `<p class="hand">${choice ? 'j’enregistre ton vote…' : 'un instant…'}</p>`;
+    // Google takes a second or two to save the vote: say thank you right away,
+    // the answers and results fill in when it replies. keepalive lets the vote
+    // through even if the subscriber closes the page before then.
+    root.innerHTML = choice
+      ? `<h1>Merci, <mark>c’est noté</mark></h1><div class="card"><p class="hand">un instant…</p></div>`
+      : `<p class="hand">un instant…</p>`;
     try {
-      endpoint = (await (await fetch('data/sondage.json', { cache: 'no-cache' })).json()).endpoint;
+      endpoint = (await (await fetch('data/sondage.json')).json()).endpoint;
       if (choice) return vote(choice);
       render(await call(), false);
     } catch (err) {
