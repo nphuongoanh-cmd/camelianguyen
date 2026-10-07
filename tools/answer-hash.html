@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unlock answer hash</title>
+  <style>
+    body { font: 17px/1.5 system-ui, sans-serif; background: #FBF6EE; color: #2B2521; max-width: 560px; margin: 0 auto; padding: 24px 16px; }
+    input, output { display: block; width: 100%; box-sizing: border-box; font: inherit; padding: 10px; margin: 8px 0 16px; border: 2px solid #2B2521; border-radius: 10px; background: #fff; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>Unlock answer hash</h1>
+  <p>Type the answer readers will give (for example the first word of a page). Copy the code below into <code>answerHash</code> in <code>data/books.json</code>. Capitals, accents and spaces don't matter.</p>
+  <input id="a" placeholder="pivoine" autocomplete="off">
+  <output id="h"></output>
+  <script>
+    const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    document.getElementById('a').addEventListener('input', async e => {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(norm(e.target.value)));
+      document.getElementById('h').textContent = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+    });
+  </script>
+</body>
+</html>
