@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poll links for Kit</title>
+  <style>
+    body { font: 17px/1.5 system-ui, sans-serif; background: #FBF6EE; color: #2B2521; max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+    label { display: block; font-weight: 700; margin-top: 16px; }
+    input, textarea { display: block; width: 100%; box-sizing: border-box; font: inherit; padding: 10px; margin: 6px 0; border: 2px solid #2B2521; border-radius: 10px; background: #fff; }
+    textarea { font: 14px/1.4 ui-monospace, monospace; min-height: 150px; }
+    button { font: inherit; font-weight: 700; padding: 8px 16px; border-radius: 99px; border: 2px solid #2B2521; background: #fff; cursor: pointer; }
+    .opt { background: #fff; border: 2px solid #E4D7C3; border-radius: 12px; padding: 12px; margin: 10px 0; }
+    .opt code { display: block; word-break: break-all; font-size: 14px; margin: 6px 0; }
+    .error { color: #E26D5F; font-weight: 700; }
+    .preview { background: #fff; padding: 16px; border-radius: 12px; border: 2px dashed #E4D7C3; }
+  </style>
+</head>
+<body>
+  <h1>Poll links for Kit</h1>
+  <p>Type the poll id from the <strong>Polls</strong> tab of your Google Sheet, then copy the links into your Kit email: one link per answer. Kit replaces <code>{{ subscriber.email_address }}</code> with each subscriber's email when it sends.</p>
+
+  <label for="site">Address of the poll page</label>
+  <input id="site">
+  <label for="id">Poll id</label>
+  <input id="id" placeholder="bienvenue" autocomplete="off">
+  <button id="go">Make the links</button>
+  <p class="error" id="err" hidden></p>
+
+  <div id="out" hidden>
+    <h2 id="q"></h2>
+    <h3>One link per answer</h3>
+    <p>In Kit, add a button (or select some text and add a link) for each answer, and paste its link.</p>
+    <div id="links"></div>
+
+    <h3>Or: all the buttons at once</h3>
+    <p>Paste this into an <strong>HTML</strong> block in the Kit editor.</p>
+    <textarea id="html" readonly></textarea>
+    <button data-copy="html">Copy the HTML</button>
+    <p>Preview:</p>
+    <div class="preview" id="preview"></div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const MERGE = '{{ subscriber.email_address }}';
+    $('site').value = new URL('../sondage.html', location.href).href;
+
+    async function copy(text, btn) {
+      await navigator.clipboard.writeText(text);
+      const was = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = was; }, 1200);
+    }
+
+    $('go').addEventListener('click', async () => {
+      $('err').hidden = true; $('out').hidden = true;
+      const id = $('id').value.trim();
+      try {
+        const { endpoint } = await (await fetch('../data/sondage.json', { cache: 'no-cache' })).json();
+        const data = await (await fetch(`${endpoint}?poll=${encodeURIComponent(id)}`)).json();
+        if (!data.ok) throw new Error(`No poll with the id "${id}" in the Polls tab.`);
+        const site = $('site').value.trim();
+        const link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}&e=${MERGE}`;
+
+        $('q').textContent = data.poll.question;
+        $('links').innerHTML = data.poll.options.map(o => `
+          <div class="opt"><strong>${esc(o.label)}</strong><code>${esc(link(o.n))}</code>
+          <button data-link="${esc(link(o.n))}">Copy link</button></div>`).join('');
+
+        const html = `<p style="font-weight:bold;font-size:18px;margin:0 0 12px">${esc(data.poll.question)}</p>\n` +
+          data.poll.options.map(o =>
+            `<p style="margin:0 0 10px"><a href="${esc(link(o.n))}" style="display:block;padding:12px 16px;border:2px solid #2B2521;border-radius:14px;color:#2B2521;text-decoration:none;font-weight:bold">${esc(o.label)}</a></p>`
+          ).join('\n');
+        $('html').value = html;
+        $('preview').innerHTML = html;
+        $('out').hidden = false;
+      } catch (e) {
+        $('err').textContent = e.message.startsWith('No poll') ? e.message
+          : 'Could not reach your Google Sheet. Check the "endpoint" address in data/sondage.json.';
+        $('err').hidden = false;
+      }
+    });
+
+    document.addEventListener('click', e => {
+      if (e.target.dataset.link) copy(e.target.dataset.link, e.target);
+      if (e.target.dataset.copy) copy($(e.target.dataset.copy).value, e.target);
+    });
+  </script>
+</body>
+</html>

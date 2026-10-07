@@ -237,3 +237,24 @@ label { display: block; font-weight: 700; margin-bottom: 8px; }
 
 .saved { font-family: "Caveat", cursive; font-weight: 700; font-size: 20px; opacity: 0; transition: opacity .3s; }
 .saved.show { opacity: .7; }
+
+/* Polls (sondage.html) */
+.poll-options { list-style: none; padding: 0; margin: 14px 0 10px; display: grid; gap: 10px; }
+.poll-option {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 52px;
+  padding: 12px 16px;
+  background: var(--paper); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: 14px;
+  font: 700 16px/1.3 "Nunito Sans", system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.poll-option:disabled { cursor: progress; opacity: .7; }
+.poll-option.mine { border-color: var(--pink); box-shadow: 0 0 0 2px var(--pink); }
+.poll-option.mine .poll-label::after { content: " ✓"; color: var(--pink); }
+.poll-bar { position: absolute; inset: 0 auto 0 0; background: var(--mustard); opacity: .55; transition: width .5s ease; }
+.poll-option.mine .poll-bar { background: #F6DCD4; opacity: 1; }
+.poll-label, .poll-pct { position: relative; }
+.poll-pct { font-weight: 800; white-space: nowrap; }
