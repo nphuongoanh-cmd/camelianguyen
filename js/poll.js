@@ -102,14 +102,14 @@
       root.innerHTML = `
         ${top}
         <p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>
-        <div class="poll-card">
+        ${voted && !showResults ? '' : `<div class="poll-card">
           ${poll.intro ? `<p class="poll-intro">${esc(poll.intro)}</p>` : ''}
           <h2 class="poll-q">${esc(poll.question)}</h2>
           <ul class="poll-options">${options}</ul>
           <p class="poll-note">${voted
             ? `${showResults ? `${total} réponse${total > 1 ? 's' : ''} pour l’instant. ` : ''}Tu as changé d’avis${NB}? Touche une autre réponse.`
             : esc(poll.note || `Un clic suffit.`)}</p>
-        </div>`;
+        </div>`}`;
     });
 
     root.querySelectorAll('.poll-option').forEach(btn => {
@@ -162,12 +162,13 @@
     // Google takes a second or two to save the vote, so the page doesn't wait
     // for it: it thanks right away (or opens the text box for the free-text
     // answer), and the answers fill in when Google replies. keepalive lets the
-    // vote through even if the subscriber closes the page before then.
+    // vote through even if the subscriber closes the page before then. Once
+    // they have voted, the answers only show again if the poll shows results.
     if (!choice) root.innerHTML = `<p class="hand">un instant…</p>`;
     else keepTyping(() => {
       root.innerHTML = freeTextLink
         ? `<h1>Raconte-<mark>moi</mark></h1>${textForm()}<p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>`
-        : `<h1>Merci, <mark>c’est noté</mark></h1><div class="poll-card"><p class="hand">un instant…</p></div>`;
+        : `<h1>Merci, <mark>c’est noté</mark></h1>`;
     });
     try {
       endpoint = (await (await fetch('data/sondage.json')).json()).endpoint;
