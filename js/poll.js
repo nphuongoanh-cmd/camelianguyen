@@ -10,6 +10,9 @@
   const params = new URLSearchParams(location.search);
   const pollId = (params.get('p') || '').trim();
   const choice = Number(params.get('c')) || null;
+  // t=1 marks the free-text answer ("Autre chose (je te raconte)"), so the text
+  // box can show at once, before Google replies.
+  const freeTextLink = params.get('t') === '1';
   // In a query string "+" reads as a space, and an email address never has one.
   const fromLink = (params.get('e') || '').trim().replace(/ /g, '+');
 
@@ -50,6 +53,26 @@
     root.innerHTML = `<h1>${title}</h1><p>${text}</p>`;
   }
 
+  const textForm = () => `
+    <form class="poll-text">
+      <label for="poll-text" class="poll-text-hint">Écris ici, aussi peu ou autant que tu veux.</label>
+      <textarea id="poll-text" maxlength="2000" rows="5"></textarea>
+      <button class="btn" type="submit">Envoyer</button>
+    </form>`;
+
+  // Re-rendering must not lose what the subscriber is typing.
+  function keepTyping(fn) {
+    const box = root.querySelector('textarea');
+    const typed = box ? box.value : '';
+    const focused = box && document.activeElement === box;
+    fn();
+    const next = root.querySelector('textarea');
+    if (next && typed) next.value = typed;
+    if (next && focused) next.focus();
+    const form = root.querySelector('.poll-text');
+    if (form) form.addEventListener('submit', e => { e.preventDefault(); sendText(form); });
+  }
+
   function render(data, voted) {
     current = data;
     const { poll, results } = data;
@@ -67,34 +90,31 @@
       </li>`;
     }).join('');
 
-    const freeText = voted && data.choice === poll.freeText;
-    const textForm = !freeText ? '' : textSent
-      ? `<p class="hand poll-sent">Bien reçu. Je lis tout.</p>`
-      : `<form class="poll-text">
-          <label for="poll-text">Raconte-moi${NB}:</label>
-          <textarea id="poll-text" maxlength="2000" rows="4" placeholder="Écris ici, aussi peu ou autant que tu veux…"></textarea>
-          <button class="btn" type="submit">Envoyer</button>
-        </form>`;
+    // The free-text answer is thanked only once the message is sent.
+    const waitingForText = voted && data.choice === poll.freeText && !textSent;
+    const top = !voted ? ''
+      : waitingForText ? `<h1>Raconte-<mark>moi</mark></h1>${textForm()}`
+      : `<h1>Merci, <mark>c’est noté</mark></h1>
+         ${poll.thanks ? `<p class="hand">${esc(poll.thanks)}</p>` : ''}
+         ${textSent && data.choice === poll.freeText ? `<p class="hand poll-sent">Bien reçu. Je lis tout.</p>` : ''}`;
 
-    root.innerHTML = `
-      ${voted ? `<h1>Merci, <mark>c’est noté</mark></h1>
-        ${poll.thanks ? `<p class="hand">${esc(poll.thanks)}</p>` : ''}` : ''}
-      <div class="poll-card">
-        ${poll.intro ? `<p class="poll-intro">${esc(poll.intro)}</p>` : ''}
-        <h2 class="poll-q">${esc(poll.question)}</h2>
-        <ul class="poll-options">${options}</ul>
-        ${textForm}
-        <p class="poll-note">${voted
-          ? `${showResults ? `${total} réponse${total > 1 ? 's' : ''} pour l’instant. ` : ''}Tu as changé d’avis${NB}? Touche une autre réponse.`
-          : esc(poll.note || `Un clic suffit.`)}</p>
-      </div>
-      <p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>`;
+    keepTyping(() => {
+      root.innerHTML = `
+        ${top}
+        <p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>
+        <div class="poll-card">
+          ${poll.intro ? `<p class="poll-intro">${esc(poll.intro)}</p>` : ''}
+          <h2 class="poll-q">${esc(poll.question)}</h2>
+          <ul class="poll-options">${options}</ul>
+          <p class="poll-note">${voted
+            ? `${showResults ? `${total} réponse${total > 1 ? 's' : ''} pour l’instant. ` : ''}Tu as changé d’avis${NB}? Touche une autre réponse.`
+            : esc(poll.note || `Un clic suffit.`)}</p>
+        </div>`;
+    });
 
     root.querySelectorAll('.poll-option').forEach(btn => {
       btn.addEventListener('click', () => vote(Number(btn.dataset.n)));
     });
-    const form = root.querySelector('.poll-text');
-    if (form) form.addEventListener('submit', e => { e.preventDefault(); sendText(form); });
   }
 
   async function sendText(form) {
@@ -102,49 +122,59 @@
     if (!text) return form.querySelector('textarea').focus();
     form.querySelector('button').disabled = true;
     try {
-      const data = await call({ poll: pollId, choice: current.poll.freeText, text });
+      // Sending the text also records the vote, so it works even if the
+      // first request is still on its way.
+      const data = await call({ poll: pollId, choice: current ? current.choice : choice, text });
       textSent = true;
       render(data, true);
+      window.scrollTo(0, 0);
     } catch {
       form.querySelector('button').disabled = false;
       root.querySelector('.error').hidden = false;
     }
   }
 
+  function failed(err, retry) {
+    if (err.message === 'unknown_poll') return message('Sondage introuvable', `Ce sondage n’existe plus, ou le lien est incomplet.`);
+    if (err.message === 'unknown_option') return message('Réponse introuvable', `Cette réponse ne fait pas partie du sondage. Reviens à ton email et touche une autre réponse.`);
+    if (current) {
+      render(current, current.choice != null);
+      root.querySelector('.error').hidden = false;
+      return;
+    }
+    message('Oups', `${retry}. Vérifie ta connexion, puis <a href="#" id="retry">réessaie</a>.`);
+    document.getElementById('retry').addEventListener('click', e => { e.preventDefault(); start(); });
+  }
+
   async function vote(n) {
     root.querySelectorAll('.poll-option').forEach(b => { b.disabled = true; });
     try {
-      textSent = false;
-      render(await call({ poll: pollId, choice: n }), true);
+      const data = await call({ poll: pollId, choice: n });
+      textSent = textSent && current && current.choice === n;
+      render(data, true);
     } catch (err) {
-      if (err.message === 'unknown_poll') {
-        message('Sondage introuvable', `Ce sondage n’existe plus, ou le lien est incomplet.`);
-      } else if (current) {
-        render(current, current.choice != null);
-        root.querySelector('.error').hidden = false;
-      } else {
-        message('Oups', `Ton vote n’a pas pu être enregistré. Vérifie ta connexion, puis <a href="#" id="retry">réessaie</a>.`);
-        document.getElementById('retry').addEventListener('click', e => { e.preventDefault(); start(); });
-      }
+      failed(err, 'Ton vote n’a pas pu être enregistré');
     }
   }
 
   async function start() {
     if (!pollId) return message('Sondage introuvable', `Ce lien semble incomplet. Reviens à ton email et touche à nouveau ta réponse.`);
-    // Google takes a second or two to save the vote: say thank you right away,
-    // the answers and results fill in when it replies. keepalive lets the vote
-    // through even if the subscriber closes the page before then.
-    root.innerHTML = choice
-      ? `<h1>Merci, <mark>c’est noté</mark></h1><div class="poll-card"><p class="hand">un instant…</p></div>`
-      : `<p class="hand">un instant…</p>`;
+    // Google takes a second or two to save the vote, so the page doesn't wait
+    // for it: it thanks right away (or opens the text box for the free-text
+    // answer), and the answers fill in when Google replies. keepalive lets the
+    // vote through even if the subscriber closes the page before then.
+    if (!choice) root.innerHTML = `<p class="hand">un instant…</p>`;
+    else keepTyping(() => {
+      root.innerHTML = freeTextLink
+        ? `<h1>Raconte-<mark>moi</mark></h1>${textForm()}<p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>`
+        : `<h1>Merci, <mark>c’est noté</mark></h1><div class="poll-card"><p class="hand">un instant…</p></div>`;
+    });
     try {
       endpoint = (await (await fetch('data/sondage.json')).json()).endpoint;
       if (choice) return vote(choice);
       render(await call(), false);
     } catch (err) {
-      if (err.message === 'unknown_poll') return message('Sondage introuvable', `Ce sondage n’existe plus, ou le lien est incomplet.`);
-      message('Oups', `Impossible de charger le sondage. Vérifie ta connexion, puis <a href="#" id="retry">réessaie</a>.`);
-      document.getElementById('retry').addEventListener('click', e => { e.preventDefault(); start(); });
+      failed(err, 'Impossible de charger le sondage');
     }
   }
 

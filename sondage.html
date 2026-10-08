@@ -10,7 +10,10 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fraunces:ital,wght@0,800;1,600&family=Nunito+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+  <!-- Fonts load without holding up the page; the vote request starts first. -->
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fraunces:ital,wght@0,800;1,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com">
   <link rel="stylesheet" href="css/app.css">
   <link rel="preload" href="data/sondage.json" as="fetch" crossorigin>
 </head>

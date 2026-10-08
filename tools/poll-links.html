@@ -87,7 +87,7 @@ ${poll.note ? `<tr><td align="center" style="padding:4px 0 0;font-family:${sans}
         const data = await (await fetch(`${endpoint}?poll=${encodeURIComponent(id)}`)).json();
         if (!data.ok) throw new Error(`No poll with the id "${id}" in the Polls tab.`);
         const site = $('site').value.trim();
-        const link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}&e=${MERGE}`;
+        const link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}${n === data.poll.freeText ? '&t=1' : ''}&e=${MERGE}`;
 
         $('q').textContent = data.poll.question;
         $('links').innerHTML = data.poll.options.map(o => `
