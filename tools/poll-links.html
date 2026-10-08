@@ -47,6 +47,31 @@
     const MERGE = '{{ subscriber.email_address }}';
     $('site').value = new URL('../sondage.html', location.href).href;
 
+    // Email-safe HTML (tables and inline styles) that looks like the poll page.
+    function emailHtml(poll, link) {
+      const sans = `'Helvetica Neue',Helvetica,Arial,sans-serif`;
+      const option = o => `
+<tr><td style="padding:0 0 12px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate"><tr>
+    <td style="background:#ffffff;border:2px solid #EBD3CA;border-radius:40px">
+      <a href="${esc(link(o.n))}" style="display:block;padding:15px 22px 15px 44px;color:#2B2521;text-decoration:none;font-family:${sans};font-size:18px;line-height:24px">
+        <span style="display:inline-block;width:18px;height:18px;border:2.5px solid #E26D5F;border-radius:50%;vertical-align:-5px;margin-right:16px">&nbsp;</span>${esc(o.label)}
+      </a>
+    </td>
+  </tr></table>
+</td></tr>`;
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;max-width:600px;margin:0 auto">
+<tr><td style="background:#FBF4EF;border:2px solid #E26D5F;border-radius:20px;padding:28px 24px 22px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+${poll.intro ? `<tr><td align="center" style="padding:0 0 12px;font-family:${sans};font-size:14px;line-height:20px;letter-spacing:2px;text-transform:uppercase;color:#E26D5F">${esc(poll.intro)}</td></tr>` : ''}
+<tr><td align="center" style="padding:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:32px;font-weight:bold;color:#2B2521">${esc(poll.question)}</td></tr>
+${poll.options.map(option).join('')}
+${poll.note ? `<tr><td align="center" style="padding:4px 0 0;font-family:${sans};font-size:16px;line-height:22px;color:#8A817C">${esc(poll.note)}</td></tr>` : ''}
+</table>
+</td></tr>
+</table>`;
+    }
+
     async function copy(text, btn) {
       await navigator.clipboard.writeText(text);
       const was = btn.textContent;
@@ -69,10 +94,7 @@
           <div class="opt"><strong>${esc(o.label)}</strong><code>${esc(link(o.n))}</code>
           <button data-link="${esc(link(o.n))}">Copy link</button></div>`).join('');
 
-        const html = `<p style="font-weight:bold;font-size:18px;margin:0 0 12px">${esc(data.poll.question)}</p>\n` +
-          data.poll.options.map(o =>
-            `<p style="margin:0 0 10px"><a href="${esc(link(o.n))}" style="display:block;padding:12px 16px;border:2px solid #2B2521;border-radius:14px;color:#2B2521;text-decoration:none;font-weight:bold">${esc(o.label)}</a></p>`
-          ).join('\n');
+        const html = emailHtml(data.poll, link);
         $('html').value = html;
         $('preview').innerHTML = html;
         $('out').hidden = false;
