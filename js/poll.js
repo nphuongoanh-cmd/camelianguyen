@@ -36,6 +36,14 @@
     if (!vid) sessionStorage.setItem(vidKey, vid = crypto.randomUUID());
   } catch { vid = Math.random().toString(36).slice(2); }
 
+  // The thank-you is shown in one go, once Google has replied and the fonts
+  // are ready, so no line pops in after the others. Fonts get 2 s at most.
+  const fontsReady = Promise.race([
+    Promise.all([document.fonts.load('700 22px Caveat'), document.fonts.load('800 32px Fraunces')]),
+    new Promise(done => setTimeout(done, 2000)),
+  ]).catch(() => {});
+  const waiting = `<div class="poll-wait" role="status" aria-label="Un instant"><svg class="peony" viewBox="0 0 120 120" aria-hidden="true"><use href="#peony"/></svg></div>`;
+
   let endpoint = '';
   let current = null; // last poll + results returned by the server
   let textSent = false;
@@ -120,16 +128,20 @@
   async function sendText(form) {
     const text = form.querySelector('textarea').value.trim();
     if (!text) return form.querySelector('textarea').focus();
-    form.querySelector('button').disabled = true;
+    const button = form.querySelector('button');
+    button.disabled = true;
+    button.textContent = 'Envoi…';
     try {
       // Sending the text also records the vote, so it works even if the
       // first request is still on its way.
       const data = await call({ poll: pollId, choice: current ? current.choice : choice, text });
+      await fontsReady;
       textSent = true;
       render(data, true);
       window.scrollTo(0, 0);
     } catch {
-      form.querySelector('button').disabled = false;
+      button.disabled = false;
+      button.textContent = 'Envoyer';
       root.querySelector('.error').hidden = false;
     }
   }
@@ -150,6 +162,7 @@
     root.querySelectorAll('.poll-option').forEach(b => { b.disabled = true; });
     try {
       const data = await call({ poll: pollId, choice: n });
+      await fontsReady;
       textSent = textSent && current && current.choice === n;
       render(data, true);
     } catch (err) {
@@ -159,21 +172,21 @@
 
   async function start() {
     if (!pollId) return message('Sondage introuvable', `Ce lien semble incomplet. Reviens à ton email et touche à nouveau ta réponse.`);
-    // Google takes a second or two to save the vote, so the page doesn't wait
-    // for it: it thanks right away (or opens the text box for the free-text
-    // answer), and the answers fill in when Google replies. keepalive lets the
-    // vote through even if the subscriber closes the page before then. Once
-    // they have voted, the answers only show again if the poll shows results.
-    if (!choice) root.innerHTML = `<p class="hand">un instant…</p>`;
-    else keepTyping(() => {
-      root.innerHTML = freeTextLink
-        ? `<h1>Raconte-<mark>moi</mark></h1>${textForm()}<p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>`
-        : `<h1>Merci, <mark>c’est noté</mark></h1>`;
+    // Google takes a second or two to save the vote. The free-text answer opens
+    // its text box right away; otherwise a peony waits until the whole thank-you
+    // can show at once. keepalive lets the vote through even if the subscriber
+    // closes the page before then. Once they have voted, the answers only show
+    // again if the poll shows results.
+    if (choice && freeTextLink) keepTyping(() => {
+      root.innerHTML = `<h1>Raconte-<mark>moi</mark></h1>${textForm()}<p class="error" role="alert" hidden>Oups, ça n’a pas pu être enregistré. Tu peux réessayer${NB}?</p>`;
     });
+    else root.innerHTML = waiting;
     try {
       endpoint = (await (await fetch('data/sondage.json')).json()).endpoint;
       if (choice) return vote(choice);
-      render(await call(), false);
+      const data = await call();
+      await fontsReady;
+      render(data, false);
     } catch (err) {
       failed(err, 'Impossible de charger le sondage');
     }

@@ -153,3 +153,8 @@ main {
 @media (max-width: 420px) {
   .poll-option { padding-left: 22px; font-size: 17px; gap: 14px; }
 }
+
+.poll-wait { display: flex; justify-content: center; padding: 64px 0; }
+.poll-wait .peony { width: 56px; height: 56px; animation: poll-breathe 1.6s ease-in-out infinite; }
+@keyframes poll-breathe { 50% { transform: scale(1.15) rotate(8deg); opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .poll-wait .peony { animation: none; } }
