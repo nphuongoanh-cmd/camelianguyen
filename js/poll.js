@@ -128,9 +128,11 @@
   async function sendText(form) {
     const text = form.querySelector('textarea').value.trim();
     if (!text) return form.querySelector('textarea').focus();
-    const button = form.querySelector('button');
-    button.disabled = true;
-    button.textContent = 'Envoi…';
+    // The peony waits while the message is sent. The page itself is set
+    // aside, not destroyed, so it comes back as it was if sending fails.
+    const page = [...root.childNodes];
+    root.innerHTML = waiting;
+    window.scrollTo(0, 0);
     try {
       // Sending the text also records the vote, so it works even if the
       // first request is still on its way.
@@ -138,10 +140,8 @@
       await fontsReady;
       textSent = true;
       render(data, true);
-      window.scrollTo(0, 0);
     } catch {
-      button.disabled = false;
-      button.textContent = 'Envoyer';
+      root.replaceChildren(...page);
       root.querySelector('.error').hidden = false;
     }
   }
