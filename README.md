@@ -39,7 +39,7 @@ If you change `Code.gs` later, use **Deploy → Manage deployments → Edit → 
    - `thank-you message`: optional.
    - `show results`: `yes` or `no`, to show subscribers the results after they vote.
 2. Open `tools/poll-links.html` on your site (for example `https://<site>/tools/poll-links.html`), type the id, and click **Make the links**.
-3. In Kit, paste the ready-made HTML into an HTML block (it looks like the poll page), or add one button per answer and paste its link.
+3. In Kit, paste the ready-made HTML into an HTML block. It has the same design as the poll in the welcome email. You can also add one button per answer and paste its link.
 
 Votes show up in the **Votes** tab: date, poll, answer, email, and the message typed in the text box, if any. You can filter, sort or make a chart of them there.
 

@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Poll links for Kit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Nunito+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     body { font: 17px/1.5 system-ui, sans-serif; background: #FBF6EE; color: #2B2521; max-width: 720px; margin: 0 auto; padding: 24px 16px; }
     label { display: block; font-weight: 700; margin-top: 16px; }
@@ -13,7 +16,7 @@
     .opt { background: #fff; border: 2px solid #E4D7C3; border-radius: 12px; padding: 12px; margin: 10px 0; }
     .opt code { display: block; word-break: break-all; font-size: 14px; margin: 6px 0; }
     .error { color: #E26D5F; font-weight: 700; }
-    .preview { background: #fff; padding: 16px; border-radius: 12px; border: 2px dashed #E4D7C3; }
+    .preview { background: #FCF6F2; padding: 16px; border-radius: 12px; border: 2px dashed #E4D7C3; }
   </style>
 </head>
 <body>
@@ -47,29 +50,26 @@
     const MERGE = '{{ subscriber.email_address }}';
     $('site').value = new URL('../sondage.html', location.href).href;
 
-    // Email-safe HTML (tables and inline styles) that looks like the poll page.
+    // Email-safe HTML in the exact design of the poll in the welcome email
+    // (same tables, fonts, sizes, colours and spacing); only the texts and links change.
     function emailHtml(poll, link) {
-      const sans = `'Helvetica Neue',Helvetica,Arial,sans-serif`;
-      const option = o => `
-<tr><td style="padding:0 0 12px">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate"><tr>
-    <td style="background:#ffffff;border:2px solid #EBD3CA;border-radius:40px">
-      <a href="${esc(link(o.n))}" style="display:block;padding:15px 22px 15px 44px;color:#2B2521;text-decoration:none;font-family:${sans};font-size:18px;line-height:24px">
-        <span style="display:inline-block;width:18px;height:18px;border:2.5px solid #E26D5F;border-radius:50%;vertical-align:-5px;margin-right:16px">&nbsp;</span>${esc(o.label)}
-      </a>
-    </td>
-  </tr></table>
-</td></tr>`;
-      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;max-width:600px;margin:0 auto">
-<tr><td style="background:#FBF4EF;border:2px solid #E26D5F;border-radius:20px;padding:28px 24px 22px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-${poll.intro ? `<tr><td align="center" style="padding:0 0 12px;font-family:${sans};font-size:14px;line-height:20px;letter-spacing:2px;text-transform:uppercase;color:#E26D5F">${esc(poll.intro)}</td></tr>` : ''}
-<tr><td align="center" style="padding:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:32px;font-weight:bold;color:#2B2521">${esc(poll.question)}</td></tr>
-${poll.options.map(option).join('')}
-${poll.note ? `<tr><td align="center" style="padding:4px 0 0;font-family:${sans};font-size:16px;line-height:22px;color:#8A817C">${esc(poll.note)}</td></tr>` : ''}
-</table>
-</td></tr>
-</table>`;
+      const sans = `'Nunito Sans',Arial,Helvetica,sans-serif`;
+      const serif = `'Fraunces',Georgia,'Times New Roman',serif`;
+      const option = o => {
+        const href = esc(link(o.n));
+        return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 10px 0;background:#FFFFFF;border:1.5px solid #E8C9C0;border-radius:28px;">
+<tr><td width="46" valign="middle" style="padding:12px 0 12px 16px;"><a href="${href}" style="text-decoration:none;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #E26D5F;border-radius:50%;"></span></a></td>
+<td valign="middle" style="padding:12px 16px 12px 0;text-align:left;"><a href="${href}" style="font-family:${sans};font-size:16px;line-height:1.35;color:#2B2521;text-decoration:none;">${esc(o.label)}</a></td></tr></table>`;
+      };
+      return [
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #E26D5F;border-radius:14px;">`,
+        `<tr><td style="padding:22px 20px;text-align:center;">`,
+        poll.intro ? `<p style="margin:0 0 8px 0;font-family:${sans};font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#E26D5F;">${esc(poll.intro)}</p>` : '',
+        `<p style="margin:0 0 12px 0;font-family:${serif};font-size:20px;font-weight:bold;line-height:1.35;color:#2B2521;">${esc(poll.question)}</p>`,
+        ...poll.options.map(option),
+        poll.note ? `<p style="margin:14px 0 0 0;font-family:${sans};font-size:13px;line-height:1.5;color:#8A817A;">${esc(poll.note)}</p>` : '',
+        `</td></tr></table>`,
+      ].filter(Boolean).join('\n');
     }
 
     async function copy(text, btn) {
