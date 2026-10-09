@@ -21,7 +21,7 @@
 </head>
 <body>
   <h1>Poll links for Kit</h1>
-  <p>Type the poll id from the <strong>Polls</strong> tab of your Google Sheet, then copy the links into your Kit email: one link per answer. Kit replaces <code>{{ subscriber.email_address }}</code> with each subscriber's email when it sends.</p>
+  <p>Type the poll id from the <strong>Polls</strong> tab of your Google Sheet, or a feedback form id (<code>carnet</code> or <code>mental-leger</code>), then copy the links into your Kit email: one link per answer. Kit replaces <code>{{ subscriber.email_address }}</code> with each subscriber's email when it sends.</p>
 
   <label for="site">Address of the poll page</label>
   <input id="site">
@@ -61,12 +61,16 @@
 <tr><td width="46" valign="middle" style="padding:12px 0 12px 16px;"><a href="${href}" style="text-decoration:none;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #E26D5F;border-radius:50%;"></span></a></td>
 <td valign="middle" style="padding:12px 16px 12px 0;text-align:left;"><a href="${href}" style="font-family:${sans};font-size:16px;line-height:1.35;color:#2B2521;text-decoration:none;">${esc(o.label)}</a></td></tr></table>`;
       };
+      // Five star links in a row: tapping the third one gives 3 stars.
+      const stars = p => `<p style="margin:0 0 4px 0;font-size:0;line-height:0;">${p.options.map(o =>
+        `<a href="${esc(link(o.n))}" title="${esc(o.label)}" style="display:inline-block;padding:0 4px;font-family:Arial,Helvetica,sans-serif;font-size:38px;line-height:44px;color:#E26D5F;text-decoration:none;">&#9734;</a>`).join('')}</p>`;
       return [
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #E26D5F;border-radius:14px;">`,
         `<tr><td style="padding:22px 20px;text-align:center;">`,
         poll.intro ? `<p style="margin:0 0 8px 0;font-family:${sans};font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#E26D5F;">${esc(poll.intro)}</p>` : '',
         `<p style="margin:0 0 12px 0;font-family:${serif};font-size:20px;font-weight:bold;line-height:1.35;color:#2B2521;">${esc(poll.question)}</p>`,
-        ...poll.options.map(option),
+        poll.hint ? `<p style="margin:-4px 0 12px 0;font-family:${sans};font-size:15px;line-height:1.5;color:#2B2521;">${esc(poll.hint)}</p>` : '',
+        ...(poll.stars ? [stars(poll)] : poll.options.map(option)),
         poll.note ? `<p style="margin:14px 0 0 0;font-family:${sans};font-size:13px;line-height:1.5;color:#8A817A;">${esc(poll.note)}</p>` : '',
         `</td></tr></table>`,
       ].filter(Boolean).join('\n');
@@ -79,22 +83,46 @@
       setTimeout(() => { btn.textContent = was; }, 1200);
     }
 
+    // A feedback form from data/avis.json, shown in the email as its first question.
+    function avisAsPoll(id, f) {
+      const q = f.questions[0];
+      return {
+        intro: f.email.kicker,
+        question: q.label,
+        hint: q.hint,
+        stars: q.type === 'stars',
+        options: q.type === 'stars'
+          ? [1, 2, 3, 4, 5].map(n => ({ n, label: `${n} étoile${n > 1 ? 's' : ''}` }))
+          : q.options.map((label, i) => ({ n: i + 1, label })),
+        note: f.email.note,
+      };
+    }
+
     $('go').addEventListener('click', async () => {
       $('err').hidden = true; $('out').hidden = true;
       const id = $('id').value.trim();
       try {
-        const { endpoint } = await (await fetch('../data/sondage.json', { cache: 'no-cache' })).json();
-        const data = await (await fetch(`${endpoint}?poll=${encodeURIComponent(id)}`)).json();
-        if (!data.ok) throw new Error(`No poll with the id "${id}" in the Polls tab.`);
         const site = $('site').value.trim();
-        const link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}${n === data.poll.freeText ? '&t=1' : ''}&e=${MERGE}`;
+        const forms = await (await fetch('../data/avis.json', { cache: 'no-cache' })).json();
+        let poll, link;
+        if (forms[id]) {
+          poll = avisAsPoll(id, forms[id]);
+          const page = new URL('avis.html', site).href;
+          link = n => `${page}?f=${encodeURIComponent(id)}&a=${n}&e=${MERGE}&n={{ subscriber.first_name }}`;
+        } else {
+          const { endpoint } = await (await fetch('../data/sondage.json', { cache: 'no-cache' })).json();
+          const data = await (await fetch(`${endpoint}?poll=${encodeURIComponent(id)}`)).json();
+          if (!data.ok) throw new Error(`No poll with the id "${id}" in the Polls tab, and no feedback form with that id.`);
+          poll = data.poll;
+          link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}${n === poll.freeText ? '&t=1' : ''}&e=${MERGE}`;
+        }
 
-        $('q').textContent = data.poll.question;
-        $('links').innerHTML = data.poll.options.map(o => `
+        $('q').textContent = poll.question;
+        $('links').innerHTML = poll.options.map(o => `
           <div class="opt"><strong>${esc(o.label)}</strong><code>${esc(link(o.n))}</code>
           <button data-link="${esc(link(o.n))}">Copy link</button></div>`).join('');
 
-        const html = emailHtml(data.poll, link);
+        const html = emailHtml(poll, link);
         $('html').value = html;
         $('preview').innerHTML = html;
         $('out').hidden = false;

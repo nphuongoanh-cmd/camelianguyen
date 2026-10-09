@@ -15,6 +15,11 @@ for (let i = 1; i <= MAX_OPTIONS; i++) POLL_COLUMNS.push('option ' + i);
 POLL_COLUMNS.push('free-text option # (optional)', 'note (under the answers)', 'thank-you message', 'show results (yes/no)');
 const VOTE_COLUMNS = ['date', 'poll', 'option #', 'answer', 'email', 'message', 'vote id'];
 
+// Feedback forms (avis.html): one row per person and form, filled in as they answer.
+const AVIS_SHEET = 'Avis';
+const AVIS_FIELDS = ['prénom', 'carnet', 'note', 'avis', 'partage'];
+const AVIS_COLUMNS = ['date', 'form', 'email'].concat(AVIS_FIELDS, ['vote id']);
+
 const WELCOME = {
   'id': 'bienvenue',
   'intro (above the question)': 'Avant de te laisser, j’aimerais savoir une chose',
@@ -45,6 +50,7 @@ function setup() {
   if (!ss.getSheetByName(VOTES_SHEET) && ss.getSheetByName('Votes bienvenue')) ss.getSheetByName('Votes bienvenue').setName(VOTES_SHEET);
   const votes = ss.getSheetByName(VOTES_SHEET) || ss.insertSheet(VOTES_SHEET);
   addMissingColumns_(votes, VOTE_COLUMNS);
+  addMissingColumns_(ss.getSheetByName(AVIS_SHEET) || ss.insertSheet(AVIS_SHEET), AVIS_COLUMNS);
 
   const header = headerOf_(polls);
   const rows = polls.getDataRange().getDisplayValues();
@@ -99,6 +105,7 @@ function doGet(e) {
 function doPost(e) {
   let body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'bad_request' }); }
+  if (body.type === 'avis') return json_(saveAvis_(body));
 
   const poll = findPoll_(String(body.poll || '').trim());
   if (!poll) return json_({ ok: false, error: 'unknown_poll' });
@@ -204,6 +211,58 @@ function tally_(poll, rows) {
     if (rows[i].poll === poll.id && rows[i].n in counts) { counts[rows[i].n]++; total++; }
   }
   return { counts: counts, total: total };
+}
+
+// POST {type: 'avis', form, email, vid, answers: {carnet, note, avis, partage, prénom}}:
+// saves the answers sent, keeping the ones sent earlier by the same person
+// for the same form (their email, or their tab's vote id without an email).
+function saveAvis_(body) {
+  const form = String(body.form || '').toLowerCase();
+  if (!/^[a-z0-9-]{1,40}$/.test(form)) return { ok: false, error: 'unknown_form' };
+  const email = String(body.email || '').trim().toLowerCase();
+  const validEmail = EMAIL_RE.test(email) && email.length <= 254 ? email : '';
+  const vid = validEmail ? '' : String(body.vid || '').replace(/[^a-z0-9-]/gi, '').slice(0, 40);
+  const answers = body.answers && typeof body.answers === 'object' ? body.answers : {};
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    let sheet = ss.getSheetByName(AVIS_SHEET);
+    if (!sheet) { sheet = ss.insertSheet(AVIS_SHEET); addMissingColumns_(sheet, AVIS_COLUMNS); }
+    const col = headerOf_(sheet);
+    const width = sheet.getLastColumn();
+    const values = sheet.getDataRange().getValues();
+    let existing = -1;
+    if (validEmail || vid) {
+      for (let i = values.length - 1; i >= 1; i--) {
+        const same = validEmail ? values[i][col['email']] === validEmail : values[i][col['vote id']] === vid;
+        if (values[i][col['form']] === form && same) { existing = i; break; }
+      }
+    }
+    const row = existing > 0 ? values[existing].map(asText_) : new Array(width).fill('');
+    row[col['date']] = new Date();
+    row[col['form']] = form;
+    row[col['email']] = asText_(validEmail);
+    row[col['vote id']] = vid;
+    AVIS_FIELDS.forEach(field => {
+      const v = answers[field];
+      if (v === undefined || v === null || !(field in col)) return;
+      if (field === 'note') {
+        const n = Number(v);
+        if (n >= 1 && n <= 5 && Math.round(n) === n) row[col[field]] = n;
+      } else {
+        const text = String(v).trim().slice(0, MAX_TEXT);
+        if (text) row[col[field]] = asText_(text);
+      }
+    });
+    if (existing > 0) sheet.getRange(existing + 1, 1, 1, width).setValues([row]);
+    else sheet.appendRow(row);
+    SpreadsheetApp.flush();
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true };
 }
 
 // Stops Sheets from reading what a subscriber typed as a formula.

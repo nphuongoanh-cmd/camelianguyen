@@ -1,0 +1,42 @@
+{
+  "carnet": {
+    "title": "Ton avis sur ton carnet",
+    "intro": "Ton carnet vient de chez moi, pas d’Amazon. Alors ton avis aussi peut venir directement chez moi. Trois questions, deux minutes. Je lis chaque réponse. (Bao, lui, préfère s’asseoir sur le clavier.)",
+    "questions": [
+      { "id": "carnet", "type": "choice", "label": "De quel carnet veux-tu parler ?",
+        "options": ["Le cocon d’automne", "Mon cocon d’hiver", "ET SI… ?", "Quand ma tête est pleine"] },
+      { "id": "note", "type": "stars", "label": "Tu lui donnes combien ?",
+        "hint": "Sois honnête : une note moyenne m’aide autant qu’une bonne." },
+      { "id": "avis", "type": "text", "label": "Ce que tu en dis",
+        "placeholder": "Ce que tu as aimé, ce qui t’a moins parlé, une page qui t’a fait sourire… Une phrase suffit." },
+      { "id": "partage", "type": "choice", "label": "Je peux partager ton avis ?",
+        "options": ["Oui, avec mon prénom", "Oui, sans mon nom", "Non, il reste entre nous"] }
+    ],
+    "privacy": "Tes réponses servent seulement à lire ton avis et, si tu es d’accord, à le partager sur papierpivoine.fr, camelianguyen.fr, dans ma lettre ou sur mes réseaux. Tu peux me demander de le retirer à tout moment :",
+    "contact": "camelia@camelianguyen.fr",
+    "thanks": "Je lis chaque réponse.",
+    "email": {
+      "kicker": "Ton avis sur ton carnet",
+      "note": "Trois questions, deux minutes. Je lis chaque réponse."
+    }
+  },
+  "mental-leger": {
+    "title": "Ton avis sur Mental Léger",
+    "intro": "",
+    "questions": [
+      { "id": "note", "type": "stars", "label": "Tu lui donnes combien ?",
+        "hint": "Sois honnête : une note moyenne m’aide autant qu’une bonne." },
+      { "id": "avis", "type": "text", "label": "Ce que tu en dis",
+        "placeholder": "Ce que tu as aimé, ce qui t’a moins parlé, une page qui t’a fait sourire… Une phrase suffit." },
+      { "id": "partage", "type": "choice", "label": "Je peux partager ton avis ?",
+        "options": ["Oui, avec mon prénom", "Oui, sans mon nom", "Non, il reste entre nous"] }
+    ],
+    "privacy": "Tes réponses servent seulement à lire ton avis et, si tu es d’accord, à le partager sur papierpivoine.fr, camelianguyen.fr, dans ma lettre ou sur mes réseaux. Tu peux me demander de le retirer à tout moment :",
+    "contact": "camelia@camelianguyen.fr",
+    "thanks": "Je lis chaque réponse.",
+    "email": {
+      "kicker": "Ton avis sur Mental Léger",
+      "note": "Je lis chaque réponse."
+    }
+  }
+}

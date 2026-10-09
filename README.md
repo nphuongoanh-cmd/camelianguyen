@@ -5,6 +5,7 @@ One-click polls for Papier Pivoine emails sent with Kit (the welcome email and t
 - `sondage.html` and `js/poll.js`: the page that opens when a subscriber taps an answer
 - `poll-backend/Code.gs`: the Google Apps Script that saves votes in your Google Sheet
 - `data/sondage.json`: the address of that script
+- `avis.html` and `js/avis.js`: the feedback forms ("Ton avis sur…"), with their questions in `data/avis.json`
 - `tools/poll-links.html`: makes the links to paste into Kit
 - `index.html`: sends anyone who opens the site's home page to papierpivoine.fr
 
@@ -51,3 +52,12 @@ If you set up the Sheet with an older version of `Code.gs`, run **setup** again 
 - The page removes the email address from the address bar right away, and the page is hidden from search engines.
 - The vote is sent by the page's script, not by the link itself, so most email security scanners that check links don't create fake votes. A few scanners do run scripts. If you ever see a vote that looks wrong, the subscriber's latest tap always replaces it.
 - Anyone who knows how the link works could vote using someone else's email address. That's fine for a newsletter poll, but don't use it for anything that matters more.
+
+## Feedback forms
+
+Two forms replace the Tally ones: `carnet` ("Ton avis sur ton carnet") and `mental-leger` ("Ton avis sur Mental Léger"). Their questions are in `data/avis.json`.
+
+- **In an email:** type the form id in the link maker and paste the HTML into Kit. The email shows the form's first question. One tap saves that answer and opens the rest of the form with it filled in.
+- **Anywhere else** (website, QR code in a book): link to `avis.html?f=carnet` or `avis.html?f=mental-leger`. The whole form shows, nothing filled in.
+
+Answers go in the **Avis** tab: one row per person and form, with the date, form, email, first name, notebook, stars, review and sharing choice. The first name comes from Kit, or from the box that shows when someone picks "Oui, avec mon prénom".

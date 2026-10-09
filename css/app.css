@@ -158,3 +158,27 @@ main {
 .poll-wait .peony { width: 56px; height: 56px; animation: poll-breathe 1.6s ease-in-out infinite; }
 @keyframes poll-breathe { 50% { transform: scale(1.15) rotate(8deg); opacity: .55; } }
 @media (prefers-reduced-motion: reduce) { .poll-wait .peony { animation: none; } }
+
+/* Feedback forms (avis.html) */
+.avis-intro { margin: 0 0 28px; }
+.avis-form { margin-bottom: 24px; }
+.avis-q { border: 0; padding: 0; margin: 0 0 30px; min-width: 0; }
+.avis-label { padding: 0; margin: 0 0 12px; font-family: "Fraunces", Georgia, serif; font-weight: 800; font-size: 21px; line-height: 1.25; }
+.avis-hint { margin: -4px 0 12px; }
+.avis-options { display: grid; gap: 10px; }
+.avis-stars { display: flex; gap: 6px; }
+.avis-star { padding: 2px; background: none; border: 0; cursor: pointer; line-height: 0; }
+.avis-star svg { width: 42px; height: 42px; fill: none; stroke: #8A817C; stroke-width: 1.6; stroke-linejoin: round; transition: fill .15s, stroke .15s; }
+.avis-star.on svg { fill: var(--pink); stroke: var(--pink); }
+.avis-textarea, .avis-name input {
+  display: block; width: 100%;
+  font: 17px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink);
+  background: #fff; border: 2px solid #EBD3CA; border-radius: 16px; padding: 12px 16px;
+}
+.avis-textarea { resize: vertical; min-height: 120px; }
+.avis-textarea:focus, .avis-name input:focus { outline: none; border-color: var(--pink); }
+.avis-name { margin-top: 14px; }
+.avis-name label { display: block; margin: 0 0 8px; color: #8A817C; }
+.avis-missing { margin: 8px 0 0; color: var(--pink); font-weight: 700; font-size: 15px; }
+.avis-privacy { color: #8A817C; font-size: 15px; margin: 0 0 20px; }
+.avis-privacy a { color: var(--pink); }
