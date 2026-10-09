@@ -85,8 +85,11 @@ function headerOf_(sheet) {
 function doGet(e) {
   const poll = findPoll_((e.parameter.poll || '').trim());
   if (!poll) return json_({ ok: false, error: 'unknown_poll' });
-  const values = poll.showResults ? SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET).getDataRange().getValues() : null;
-  return json_({ ok: true, poll: poll, results: values ? tally_(poll, values) : null });
+  if (!poll.showResults) return json_({ ok: true, poll: poll, results: null });
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET);
+  const col = headerOf_(sheet);
+  const rows = sheet.getDataRange().getValues().map(row => ({ poll: row[col['poll']], n: row[col['option #']] }));
+  return json_({ ok: true, poll: poll, results: tally_(poll, rows) });
 }
 
 // POST {poll, choice, email, vid, text}: records the vote. One vote per person
