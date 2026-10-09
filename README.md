@@ -22,7 +22,7 @@ Each answer in your email is its own link. When a subscriber taps one, `sondage.
 
 1. Create a new Google Sheet (for example "Papier Pivoine · sondages").
 2. In the Sheet, go to **Extensions → Apps Script**. Delete what's there, paste in the contents of `poll-backend/Code.gs`, and save.
-3. In the function list at the top, pick **setup** and click **Run**. Google asks for permission to use your Sheet: accept. This creates two tabs: **Polls**, with the welcome poll `bienvenue` already filled in, and **Votes**.
+3. In the function list at the top, pick **setup** and click **Run**. Google asks for permission to use your Sheet: accept. This creates three tabs: **Polls**, with the welcome poll `bienvenue` already filled in, **Votes bienvenue** and **Votes mensuels**.
 4. Click **Deploy → New deployment**, choose the type **Web app**, set *Execute as* to **Me** and *Who has access* to **Anyone**, then click **Deploy**. Copy the URL that ends in `/exec`.
 5. Paste that URL into `data/sondage.json` in place of the `À REMPLIR` text, and put the site online (see "Putting it online" above).
 
@@ -41,7 +41,7 @@ If you change `Code.gs` later, use **Deploy → Manage deployments → Edit → 
 2. Open `tools/poll-links.html` on your site (for example `https://<site>/tools/poll-links.html`), type the id, and click **Make the links**.
 3. In Kit, paste the ready-made HTML into an HTML block (it looks like the poll page), or add one button per answer and paste its link.
 
-Votes show up in the **Votes** tab: date, poll, answer, email, and the message typed in the text box, if any. You can filter, sort or make a chart of them there.
+Votes for the welcome poll go in the **Votes bienvenue** tab. Votes for every other poll go in **Votes mensuels**, where the **poll** column tells the months apart. Each vote has the date, poll, answer, email, and the message typed in the text box, if any. You can filter, sort or make a chart of them there.
 
 If you set up the Sheet with an older version of `Code.gs`, run **setup** again after updating the script. It adds the new columns without touching your polls or votes.
 
