@@ -40,6 +40,9 @@ function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const polls = ss.getSheetByName(POLLS_SHEET) || ss.insertSheet(POLLS_SHEET);
   addMissingColumns_(polls, POLL_COLUMNS);
+  // A short-lived version split votes into "Votes bienvenue" and "Votes mensuels":
+  // bring the welcome votes back under their usual name.
+  if (!ss.getSheetByName(VOTES_SHEET) && ss.getSheetByName('Votes bienvenue')) ss.getSheetByName('Votes bienvenue').setName(VOTES_SHEET);
   const votes = ss.getSheetByName(VOTES_SHEET) || ss.insertSheet(VOTES_SHEET);
   addMissingColumns_(votes, VOTE_COLUMNS);
 
