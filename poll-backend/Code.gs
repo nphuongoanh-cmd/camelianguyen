@@ -4,11 +4,7 @@
 // Setup steps are in README.md.
 
 const POLLS_SHEET = 'Polls';
-// The welcome poll's votes go in their own tab; every other poll (the monthly
-// ones) shares the monthly tab, where the "poll" column tells them apart.
-const WELCOME_VOTES_SHEET = 'Votes bienvenue';
-const MONTHLY_VOTES_SHEET = 'Votes mensuels';
-const OLD_VOTES_SHEET = 'Votes'; // before the split: it held the welcome votes
+const VOTES_SHEET = 'Votes';
 const MAX_OPTIONS = 8;
 const MAX_TEXT = 2000;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,8 +40,8 @@ function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const polls = ss.getSheetByName(POLLS_SHEET) || ss.insertSheet(POLLS_SHEET);
   addMissingColumns_(polls, POLL_COLUMNS);
-  votesSheet_(WELCOME.id);
-  votesSheet_('');
+  const votes = ss.getSheetByName(VOTES_SHEET) || ss.insertSheet(VOTES_SHEET);
+  addMissingColumns_(votes, VOTE_COLUMNS);
 
   const header = headerOf_(polls);
   const rows = polls.getDataRange().getDisplayValues();
@@ -74,20 +70,6 @@ function addMissingColumns_(sheet, names) {
   sheet.getRange(1, 1, 1, header.length).setFontWeight('bold');
 }
 
-// The votes tab for a poll, created (with its columns) on first use. The old
-// single "Votes" tab becomes "Votes bienvenue", keeping every vote in it.
-function votesSheet_(pollId) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const name = pollId === WELCOME.id ? WELCOME_VOTES_SHEET : MONTHLY_VOTES_SHEET;
-  let sheet = ss.getSheetByName(name);
-  if (!sheet && name === WELCOME_VOTES_SHEET && ss.getSheetByName(OLD_VOTES_SHEET)) {
-    sheet = ss.getSheetByName(OLD_VOTES_SHEET).setName(WELCOME_VOTES_SHEET);
-  }
-  if (!sheet) sheet = ss.insertSheet(name);
-  if (!sheet.getLastColumn() || !(VOTE_COLUMNS[VOTE_COLUMNS.length - 1] in headerOf_(sheet))) addMissingColumns_(sheet, VOTE_COLUMNS);
-  return sheet;
-}
-
 // { 'header name': column index (0-based) }
 function headerOf_(sheet) {
   const header = {};
@@ -100,11 +82,8 @@ function headerOf_(sheet) {
 function doGet(e) {
   const poll = findPoll_((e.parameter.poll || '').trim());
   if (!poll) return json_({ ok: false, error: 'unknown_poll' });
-  if (!poll.showResults) return json_({ ok: true, poll: poll, results: null });
-  const sheet = votesSheet_(poll.id);
-  const col = headerOf_(sheet);
-  const rows = sheet.getDataRange().getValues().map(row => ({ poll: row[col['poll']], n: row[col['option #']] }));
-  return json_({ ok: true, poll: poll, results: tally_(poll, rows) });
+  const values = poll.showResults ? SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET).getDataRange().getValues() : null;
+  return json_({ ok: true, poll: poll, results: values ? tally_(poll, values) : null });
 }
 
 // POST {poll, choice, email, vid, text}: records the vote. One vote per person
@@ -128,7 +107,7 @@ function doPost(e) {
   lock.waitLock(10000);
   let results = null;
   try {
-    const sheet = votesSheet_(poll.id);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VOTES_SHEET);
     const col = headerOf_(sheet);
     const width = sheet.getLastColumn();
     // Read the votes once: to find this person's earlier vote, and to count.
