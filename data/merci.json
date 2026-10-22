@@ -1,0 +1,50 @@
+{
+  "_comment": "Pages shown after a poll answer. \"_default\" is used for every poll; a poll's own entry (by its id) replaces what it names. [brackets] in a title are highlighted. \"answers\" is keyed by answer number. A lead of null uses the thank-you message from the Polls tab.",
+
+  "_default": {
+    "merci": {
+      "image": "lettre",
+      "title": "Merci, [c’est noté]",
+      "lead": null
+    },
+    "raconte": {
+      "image": "carnet",
+      "title": "Raconte-[moi]",
+      "lead": "Écris ici, aussi peu ou autant que tu veux.",
+      "label": "Ton message",
+      "button": "Envoyer"
+    },
+    "envoye": {
+      "image": "lettre",
+      "title": "Merci de [m’avoir écrit]",
+      "lead": "Ça me fait toujours plaisir de te lire, et ça m’aide à t’écrire des lettres qui te ressemblent."
+    },
+    "signature": "Camélia"
+  },
+
+  "bienvenue": {
+    "freeText": 7,
+    "merci": {
+      "image": "lettre",
+      "title": "Merci, [c’est noté]",
+      "lead": "Ça m’aide à t’écrire des lettres qui te ressemblent."
+    },
+    "next": {
+      "title": "Pour ta semaine offerte",
+      "button": "Ouvrir ma première semaine",
+      "link": "https://drive.google.com/drive/folders/117brSAgfW16UMi1hUnfWoJ8BWboDXTzU?usp=sharing"
+    },
+    "answers": {
+      "1": { "next": "Ta semaine offerte est faite pour ça. Commence par le jour 1, « Le vidage », page 10." },
+      "2": { "next": "Le jour 3 de ta semaine offerte, page 12, te pose la question « est-ce que je peux agir dessus ? ». Et dans le programme complet, la semaine 2 est faite pour ces pensées-là." },
+      "3": { "next": "Le jour 4 de ta semaine offerte, page 13, te fait revenir par les sens avec le 5-4-3-2-1. Et dans le programme complet, la semaine 3 t’aide à protéger ton énergie." },
+      "4": { "next": "Dans le programme complet, toute la semaine 4 est là pour ça, te parler comme à une amie. En attendant, tu peux commencer par le jour 1, page 10." },
+      "5": { "next": "Dans le programme complet, la semaine 5 t’aide à trouver tes mots pour dire non. En attendant, tu peux commencer par le jour 1, page 10." },
+      "6": {
+        "image": "deux",
+        "title": "Merci de me [l’avoir dit]",
+        "lead": "Tu n’es pas la seule à avoir choisi cette réponse. Si tu veux m’en dire plus, réponds simplement à mon mail, ça me fait toujours plaisir de te lire."
+      }
+    }
+  }
+}

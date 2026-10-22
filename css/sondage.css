@@ -1,0 +1,100 @@
+/* Poll thank-you pages (sondage.html): the website palette and card design
+   from the "pages merci" redesign, plus the pieces the poll page needs on top
+   (waiting peony, the question when opened without an answer, results). */
+:root {
+  --paper: #FCF6F2; --ink: #33321E; --ink-soft: #4A4636; --muted: #6B6953;
+  --peony: #E26D5F; --peony-dk: #BF5548; --sand: #EAD9AC; --sand-l: #F7F0DE;
+  --line: #EDE1D6; --dot: #E8DCCB;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh; display: flex; flex-direction: column;
+  background: var(--paper);
+  background-image: radial-gradient(var(--dot) 1.4px, transparent 1.5px);
+  background-size: 28px 28px;
+  color: var(--ink);
+  font: 600 18px/1.65 "Nunito Sans", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+header { display: flex; align-items: center; gap: 12px; padding: 20px 24px; }
+header a { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
+header img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--ink); }
+header span { font: 800 21px/1 Fraunces, Georgia, serif; font-variation-settings: "opsz" 72; }
+main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px 16px 40px; }
+.card {
+  width: 100%; max-width: 600px;
+  background: #FFFDF8; border: 1.5px solid var(--line); border-radius: 28px;
+  padding: 40px 40px 34px; text-align: center;
+  box-shadow: 0 18px 40px rgba(51, 50, 30, .06);
+}
+.vis { display: block; width: 100%; max-width: 340px; height: auto; margin: 0 auto 22px; }
+h1 {
+  font: 800 clamp(34px, 6vw, 46px)/1.1 Fraunces, Georgia, serif; font-variation-settings: "opsz" 72;
+  margin: 0 0 14px; letter-spacing: -.005em; text-wrap: balance;
+}
+mark { background: linear-gradient(transparent 58%, var(--sand) 58%, var(--sand) 92%, transparent 92%); color: inherit; padding: 0 4px; }
+.lead { font-size: 19px; color: var(--ink-soft); margin: 0 auto; max-width: 30em; text-wrap: pretty; }
+.next { background: var(--sand-l); border-radius: 20px; padding: 22px 24px 24px; margin: 28px 0 0; text-align: left; }
+.next .k { font: 800 12.5px/1.3 "Nunito Sans", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--peony-dk); margin: 0 0 8px; }
+.next p { margin: 0 0 16px; font-size: 17px; color: var(--ink-soft); }
+.btn {
+  display: inline-block; background: var(--peony); color: #fff;
+  font: 800 17px/1 "Nunito Sans", Arial, sans-serif; text-decoration: none;
+  padding: 15px 26px; border-radius: 999px; border: 0; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(226, 109, 95, .25);
+}
+.btn:hover { background: var(--peony-dk); }
+.sig { font: 700 34px/1 Caveat, "Bradley Hand", "Segoe Script", cursive; color: var(--peony-dk); margin: 26px 0 0; }
+form { margin: 24px 0 0; text-align: left; }
+label { display: block; font-weight: 800; font-size: 15px; margin: 0 0 8px; color: var(--ink-soft); }
+textarea {
+  width: 100%; min-height: 190px; resize: vertical;
+  border: 1.5px solid var(--line); border-radius: 18px; background: #fff; padding: 16px 18px;
+  font: 600 17px/1.6 "Nunito Sans", Arial, sans-serif; color: var(--ink); outline: none;
+}
+textarea:focus { border-color: var(--peony); box-shadow: 0 0 0 4px rgba(226, 109, 95, .14); }
+.row { display: flex; justify-content: flex-end; margin-top: 14px; }
+footer { text-align: center; padding: 0 16px 22px; font-size: 14px; color: var(--muted); }
+footer a { color: var(--muted); text-decoration: none; }
+footer .h { font: 700 22px/1 Caveat, cursive; color: #8C7F72; display: block; margin-bottom: 4px; }
+
+/* Waiting for Google */
+.wait { display: flex; justify-content: center; padding: 48px 0; }
+.wait svg { width: 56px; height: 56px; animation: breathe 1.6s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.15) rotate(8deg); opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .wait svg { animation: none; } }
+
+.err { margin: 18px 0 0; color: var(--peony-dk); font-weight: 800; font-size: 16px; }
+.err button { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+
+/* The question, when the page is opened without an answer, and results */
+.kicker { font: 800 12.5px/1.3 "Nunito Sans", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--peony-dk); margin: 0 0 10px; }
+.q { font: 800 26px/1.25 Fraunces, Georgia, serif; margin: 0 0 20px; }
+.options { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 10px; text-align: left; }
+.option {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px;
+  width: 100%; min-height: 54px; padding: 12px 20px;
+  background: #fff; color: var(--ink); border: 1.5px solid #E8C9C0; border-radius: 28px;
+  font: 600 17px/1.35 "Nunito Sans", Arial, sans-serif; text-align: left; cursor: pointer;
+}
+.option::before { content: ""; position: relative; z-index: 1; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--peony); }
+.option:hover { border-color: var(--peony); }
+.option:disabled { cursor: progress; opacity: .7; }
+.option.mine { border-color: var(--peony); }
+.option.mine::before { background: radial-gradient(var(--peony) 0 4px, #fff 4.5px); }
+.bar { position: absolute; inset: 0 auto 0 0; background: var(--sand-l); }
+.option.mine .bar { background: #FBEDEA; }
+.label { position: relative; flex: 1; }
+.pct { position: relative; font-weight: 800; white-space: nowrap; }
+.note { color: var(--muted); font-size: 15px; margin: 0; }
+.results { margin: 28px 0 0; }
+
+@media (max-width: 560px) {
+  .card { padding: 30px 22px 28px; border-radius: 24px; }
+  .vis { max-width: 260px; }
+  .lead { font-size: 18px; }
+  .row { justify-content: stretch; }
+  .row .btn, .next .btn { width: 100%; text-align: center; padding: 15px 14px; font-size: 16px; white-space: nowrap; }
+  .next { padding: 20px 18px 20px; }
+}

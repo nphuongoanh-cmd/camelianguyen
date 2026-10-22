@@ -3,6 +3,7 @@
 One-click polls for Papier Pivoine emails sent with Kit (the welcome email and the monthly newsletter). Subscribers tap an answer in the email and their vote is saved with their email address in a Google Sheet.
 
 - `sondage.html` and `js/poll.js`: the page that opens when a subscriber taps an answer
+- `data/merci.json`: what that page says after each answer (titles, lines, illustrations from `assets/merci/`, the "Pour ta semaine offerte" box). Polls without their own entry use the thank-you message from the Polls tab
 - `poll-backend/Code.gs`: the Google Apps Script that saves votes in your Google Sheet
 - `data/sondage.json`: the address of that script
 - `avis.html` and `js/avis.js`: the feedback forms ("Ton avis sur…"), with their questions in `data/avis.json`

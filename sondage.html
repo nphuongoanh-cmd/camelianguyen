@@ -3,34 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Papier Pivoine · sondage</title>
+  <title>Merci · Papier Pivoine</title>
   <meta name="robots" content="noindex">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#FBF6EE">
-  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#FCF6F2">
+  <link rel="icon" href="assets/merci/logo.webp" type="image/webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Fraunces:ital,wght@0,800;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Nunito+Sans:opsz,wght@6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sondage.css">
   <link rel="preconnect" href="https://script.google.com">
   <link rel="preconnect" href="https://script.googleusercontent.com">
-  <link rel="stylesheet" href="css/app.css">
   <link rel="preload" href="data/sondage.json" as="fetch" crossorigin>
+  <link rel="preload" href="data/merci.json" as="fetch" crossorigin>
 </head>
 <body>
-  <header class="top">
-    <a href="https://papierpivoine.fr/" class="brand">
-      <svg class="peony" viewBox="0 0 120 120" aria-hidden="true"><use href="#peony"/></svg>
-      <span>Papier Pivoine</span>
-    </a>
+  <header>
+    <a href="https://papierpivoine.fr/"><img src="assets/merci/logo.webp" alt="" width="44" height="44"><span>Papier Pivoine</span></a>
   </header>
 
-  <main id="poll" tabindex="-1" aria-live="polite">
-    <p class="hand">un instant…</p>
-  </main>
+  <main><div class="card" id="poll" aria-live="polite"></div></main>
 
-  <footer class="foot">
-    <span class="sign">@papierpivoine</span>
-  </footer>
+  <footer><span class="h">@papierpivoine</span><a href="https://papierpivoine.fr/">papierpivoine.fr</a></footer>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="peony" viewBox="0 0 120 120">
