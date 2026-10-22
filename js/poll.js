@@ -103,7 +103,7 @@
     const lead = w.lead !== null ? w.lead : (current && current.poll.thanks) || '';
     const next = w.next && words.next ? `
       <div class="next">
-        ${words.next.title ? `<p class="k">${esc(words.next.title)}</p>` : ''}
+        ${w.nextTitle || words.next.title ? `<p class="k">${esc(w.nextTitle || words.next.title)}</p>` : ''}
         <p>${esc(w.next)}</p>
         <a class="btn" href="${esc(words.next.link)}" target="_blank" rel="noopener">${esc(words.next.button)}</a>
       </div>` : '';

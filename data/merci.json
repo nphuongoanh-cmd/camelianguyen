@@ -1,5 +1,5 @@
 {
-  "_comment": "Pages shown after a poll answer. \"_default\" is used for every poll; a poll's own entry (by its id) replaces what it names. [brackets] in a title are highlighted. \"answers\" is keyed by answer number. A lead of null uses the thank-you message from the Polls tab.",
+  "_comment": "Pages shown after a poll answer. \"_default\" is used for every poll; a poll's own entry (by its id) replaces what it names. [brackets] in a title are highlighted. \"answers\" is keyed by answer number; an answer's \"nextTitle\" is the small heading of its box. A lead of null uses the thank-you message from the Polls tab.",
 
   "_default": {
     "merci": {
@@ -34,11 +34,11 @@
       "link": "https://drive.google.com/drive/folders/117brSAgfW16UMi1hUnfWoJ8BWboDXTzU?usp=sharing"
     },
     "answers": {
-      "1": { "next": "Ta semaine offerte est faite pour ça. Commence par le jour 1, « Le vidage », page 10." },
-      "2": { "next": "Dans ta semaine offerte, le jour 3, page 12, pose la question « est-ce que je peux agir dessus ? ». Et dans le programme complet, la semaine 2 est faite pour ces pensées-là." },
-      "3": { "next": "Dans ta semaine offerte, le jour 4, page 13, te fait revenir par les sens avec le 5-4-3-2-1. Et dans le programme complet, la semaine 3 t’aide à protéger ton énergie." },
-      "4": { "next": "Dans le programme complet, toute la semaine 4 est là pour ça, te parler comme à une amie. En attendant, tu peux commencer par le jour 1, page 10." },
-      "5": { "next": "Dans le programme complet, la semaine 5 t’aide à trouver tes mots pour dire non. En attendant, tu peux commencer par le jour 1, page 10." },
+      "1": { "nextTitle": "Pour ta semaine offerte", "next": "Ta semaine offerte est faite pour ça. Commence par le jour 1, « Le vidage », page 10." },
+      "2": { "nextTitle": "Pour ta semaine offerte", "next": "Dans ta semaine offerte, le jour 3, page 12, pose la question « est-ce que je peux agir dessus ? ». Et dans le programme complet, la semaine 2 est faite pour ces pensées-là." },
+      "3": { "nextTitle": "Pour ta semaine offerte", "next": "Dans ta semaine offerte, le jour 4, page 13, te fait revenir par les sens avec le 5-4-3-2-1. Et dans le programme complet, la semaine 3 t’aide à protéger ton énergie." },
+      "4": { "nextTitle": "Pour la suite", "next": "Dans le programme complet, toute la semaine 4 est là pour ça, te parler comme à une amie. En attendant, tu peux commencer par le jour 1, page 10." },
+      "5": { "nextTitle": "Pour la suite", "next": "Dans le programme complet, la semaine 5 t’aide à trouver tes mots pour dire non. En attendant, tu peux commencer par le jour 1, page 10." },
       "6": {
         "image": "deux",
         "title": "Merci de me [l’avoir dit]",
