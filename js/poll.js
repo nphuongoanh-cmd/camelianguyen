@@ -31,7 +31,7 @@
     set(v) { try { sessionStorage.setItem(emailKey, v); } catch { /* private mode */ } },
   };
   if (fromLink) session.set(fromLink);
-  const email = fromLink || session.get();
+  let email = fromLink || session.get();   // emptied below for an anonymous poll
   if (pollId) history.replaceState(null, '', `${location.pathname}?p=${encodeURIComponent(pollId)}`);
 
   // Without an email (a forwarded email, a test send), this random id lets a
@@ -225,6 +225,8 @@
       const own = merci[pollId] || {};
       words = { ...merci._default, ...own };
       ['merci', 'raconte', 'envoye'].forEach(k => { words[k] = { ...merci._default[k], ...(own[k] || {}) }; });
+      // An anonymous poll never sends an email, even if a link carries one.
+      if (words.anonymous) { email = ''; session.set(''); }
     } catch {
       message('Oups', `Impossible de charger la page. Vérifie ta connexion, puis <a href="#" id="retry">réessaie</a>.`);
       document.getElementById('retry').addEventListener('click', e => { e.preventDefault(); start(); });

@@ -104,6 +104,9 @@
       try {
         const site = $('site').value.trim();
         const forms = await (await fetch('../data/avis.json', { cache: 'no-cache' })).json();
+        const merci = await (await fetch('../data/merci.json', { cache: 'no-cache' })).json();
+        // An anonymous poll (set in data/merci.json) gets links without the email.
+        const anonymous = !!(merci[id] && merci[id].anonymous);
         let poll, link;
         if (forms[id]) {
           poll = avisAsPoll(id, forms[id]);
@@ -114,10 +117,10 @@
           const data = await (await fetch(`${endpoint}?poll=${encodeURIComponent(id)}`)).json();
           if (!data.ok) throw new Error(`No poll with the id "${id}" in the Polls tab, and no feedback form with that id.`);
           poll = data.poll;
-          link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}${n === poll.freeText ? '&t=1' : ''}&e=${MERGE}`;
+          link = n => `${site}?p=${encodeURIComponent(id)}&c=${n}${n === poll.freeText ? '&t=1' : ''}${anonymous ? '' : `&e=${MERGE}`}`;
         }
 
-        $('q').textContent = poll.question;
+        $('q').textContent = poll.question + (anonymous ? ' (anonymous poll: no email in the links)' : '');
         $('links').innerHTML = poll.options.map(o => `
           <div class="opt"><strong>${esc(o.label)}</strong><code>${esc(link(o.n))}</code>
           <button data-link="${esc(link(o.n))}">Copy link</button></div>`).join('');
